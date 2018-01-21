@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>画板</title>
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing: border-box;
+    }
+    body{
+      margin:0px;
+    }
+    #canvas{
+      background:rgb(255, 251, 240);
+    }
+    .canvas-color{
+      position:fixed;
+      bottom:0;
+      left:0;
+      font-size:0px;
+      width:30px;
+    }
+    .canvas-color span{
+      display:inline-block;
+      height:15px;
+      width:15px;
+      border:1px solid #ccc;
+    }
+    .canvas-color .red{
+      background-color:red;
+    }
+    .canvas-color .black{
+      background-color:black;
+    }
+    .canvas-color .yellow{
+      background-color:yellow;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+
+  <div class="canvas-color">
+    <span class="red"></span>
+    <span class="black"></span>
+    <span class="yellow"></span>
+    <span class="pink"></span>
+    <button id="eraser">橡皮擦</button>
+  </div>
+  <script>
+    var canvas = document.getElementById('canvas')
+    var eraser = document.getElementById('eraser')
+    var color = document.getElementsByClassName('canvas-color')[0].getElementsByTagName('span')
+
+    setPageSize()
+    window.onresize = function(){
+      setPageSize()
+    }
+
+    //动态设置宽高
+    function setPageSize(){
+      var pageWidth = document.documentElement.clientWidth
+      var pageHeight = document.documentElement.clientHeight
+
+      canvas.width = pageWidth
+      canvas.height = pageHeight
+    }
+
+    var ctx = canvas.getContext('2d')
+
+    for(var i=0;i<color.length;i++){
+      color[i].onclick = function(){
+        ctx.strokeStyle = this.className
+        console.log(ctx.fillStyle)
+      }
+    }
+
+    var using = false  //鼠标是否按下
+    var lastPoint = {}  //x y
+    canvas.onmousedown = function(e){
+      var x = e.clientX
+      var y = e.clientY
+      using = true
+      if(eraserEnabled){
+        ctx.clearRect(x,y,10,10)
+      }else{
+        lastPoint = {x:x,y:y}
+      }
+    }
+
+    canvas.onmousemove = function(e){
+      var x = e.clientX
+      var y = e.clientY
+
+      if(!using){return} //鼠标是否按下
+
+      if(eraserEnabled){  //是否开启橡皮擦
+          ctx.clearRect(x-5,y-5,10,10) //擦掉
+      }else{
+          var newPoint = {x:x,y:y}
+          drawLine(lastPoint.x,lastPoint.y,newPoint.x,newPoint.y)
+          lastPoint = newPoint //连成线
+      }
+    }
+
+    canvas.onmouseup = function(e){
+      using = false
+    }
+
+    //画线
+    function drawLine(x1,y1,x2,y2){
+        ctx.beginPath()
+        ctx.moveTo(x1,y1)
+        ctx.lineWidth = 5
+        ctx.lineTo(x2,y2)
+        ctx.stroke()
+        ctx.closePath()
+    }
+
+    //橡皮擦
+    var eraserEnabled = false
+    eraser.onclick = function(){
+      eraserEnabled = !eraserEnabled
+      console.log(eraserEnabled)
+    }
+  </script>
+</body>
+</html>
